@@ -70,10 +70,11 @@ class AppDatabase extends _$AppDatabase {
 
   Future<List<Note>> searchNotes(String query) async {
     try {
+      final clean = query.replaceAll('#', '');
       final q = '%$query%';
 
       return await (select(notes)
-            ..where((n) => n.title.like(q) | n.content.like(q)))
+            ..where((n) => n.title.like(q) | n.content.like(q)| n.tags.like(clean)))
           .get();
     } catch (e) {
       print('searchNotes error: $e');
@@ -85,12 +86,10 @@ class AppDatabase extends _$AppDatabase {
 LazyDatabase _open() {
   return LazyDatabase(() async {
     final dir = await getApplicationDocumentsDirectory();
-    final dbFile = File(p.join(dir.path, 'notes.db'));
+    final file = File(p.join(dir.path, 'notes.db'));
 
-    final isolate = await DriftIsolate.spawn(() {
-      return NativeDatabase(dbFile);
-    });
-
-    return isolate.connect();
+    return NativeDatabase.createInBackground(file);
   });
 }
+
+

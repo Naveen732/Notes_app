@@ -8,14 +8,12 @@ class NotesRepository {
 
   Stream<List<NoteModel>> watchNotes() =>
       db.watchNotes().map((rows) => rows.map(fromDrift).toList());
-
-  // ✅ Do NOT insert empty notes
   Future<void> add(NoteModel note) async {
     final title = note.title.trim();
     final content = note.content.trim();
 
     if (title.isEmpty && content.isEmpty) {
-      return; // silently ignore
+      return; 
     }
 
     await db.insertNote(toDrift(note));
@@ -26,13 +24,11 @@ class NotesRepository {
     return row == null ? null : fromDrift(row);
   }
 
-  // ✅ Do NOT update to empty note
   Future<void> update(NoteModel note) async {
     final title = note.title.trim();
     final content = note.content.trim();
 
     if (title.isEmpty && content.isEmpty) {
-      // instead of saving empty note, delete it
       if (note.id != null) {
         await delete(note.id!);
       }
@@ -49,6 +45,8 @@ class NotesRepository {
         pinned: note.pinned,
         archived: note.archived,
         createdAt: note.createdAt,
+        tags: note.tags.join(','),
+       
       ),
     );
   }

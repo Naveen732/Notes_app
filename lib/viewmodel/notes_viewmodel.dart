@@ -35,14 +35,15 @@ final notesProvider = StreamProvider<List<NoteModel>>((ref) {
 
 final searchQueryProvider = StateProvider<String>((_) => "");
 
-final searchFilterProvider =
-    StateProvider<SearchFilter>((_) => SearchFilter.all);
+final searchFilterProvider = StateProvider<SearchFilter>(
+  (_) => SearchFilter.all,
+);
 
 enum SearchFilter { all, pinned, archived }
 
 final searchResultsProvider = Provider<List<NoteModel>>((ref) {
   try {
-    final query = ref.watch(searchQueryProvider).toLowerCase();
+    final query = ref.watch(searchQueryProvider).toLowerCase().replaceAll("#", "");
     final filter = ref.watch(searchFilterProvider);
     final notes = ref.watch(notesProvider).value ?? [];
 
@@ -55,9 +56,12 @@ final searchResultsProvider = Provider<List<NoteModel>>((ref) {
     }
 
     if (query.isNotEmpty) {
-      result = result.where((n) =>
-          n.title.toLowerCase().contains(query) ||
-          n.content.toLowerCase().contains(query));
+      result = result.where(
+        (n) =>
+            n.title.toLowerCase().contains(query) ||
+            n.content.toLowerCase().contains(query)||
+            n.tags.any((t) => t.toLowerCase().contains(query)),
+      );
     }
 
     return result.toList();
@@ -117,4 +121,14 @@ final noteByIdProvider = Provider.family<NoteModel?, int>((ref, id) {
     print(st);
     return null;
   }
+});
+final allTagsProvider = Provider<List<String>>((ref) {
+  final notes = ref.watch(notesProvider).value ?? [];
+  final set = <String>{};
+
+  for (final n in notes) {
+    set.addAll(n.tags);
+  }
+
+  return set.toList();
 });

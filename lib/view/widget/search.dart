@@ -13,6 +13,7 @@ class SearchView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final results = ref.watch(searchResultsProvider);
     final query = ref.watch(searchQueryProvider);
+    final tags = ref.watch(allTagsProvider);
 
     return CupertinoPageScaffold(
       backgroundColor: bg,
@@ -29,8 +30,7 @@ class SearchView extends ConsumerWidget {
           onChanged: (v) => ref.read(searchQueryProvider.notifier).state = v,
           style: const TextStyle(color: CupertinoColors.white),
           placeholder: "Search your notes",
-          placeholderStyle:
-              const TextStyle(color: CupertinoColors.systemGrey),
+          placeholderStyle: const TextStyle(color: CupertinoColors.systemGrey),
           decoration: const BoxDecoration(color: bg),
         ),
       ),
@@ -38,19 +38,52 @@ class SearchView extends ConsumerWidget {
         child: Column(
           children: [
             _filters(ref),
+
+            // 🔥 TAG BAR
+            if (tags.isNotEmpty)
+              SizedBox(
+                height: 40,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  children: tags.map<Widget>((tag) {
+                    return GestureDetector(
+                      onTap: () {
+                        ref.read(searchQueryProvider.notifier).state = tag;
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xff303134),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          '#$tag',
+                          style: const TextStyle(color: CupertinoColors.white),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+
             Expanded(
               child: results.isEmpty
                   ? const Center(
                       child: Text(
                         "No matches",
-                        style:
-                            TextStyle(color: CupertinoColors.systemGrey),
+                        style: TextStyle(color: CupertinoColors.systemGrey),
                       ),
                     )
                   : ListView.builder(
                       itemCount: results.length,
                       itemBuilder: (context, i) {
                         final note = results[i];
+
                         return GestureDetector(
                           onTap: () => context.go('/edit/${note.id}'),
                           child: Container(
@@ -58,8 +91,9 @@ class SearchView extends ConsumerWidget {
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8),
-                              border:
-                                  Border.all(color: CupertinoColors.systemGrey),
+                              border: Border.all(
+                                color: CupertinoColors.systemGrey,
+                              ),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,17 +104,16 @@ class SearchView extends ConsumerWidget {
                                       color: CupertinoColors.white,
                                       fontSize: 18,
                                     ),
-                                    children:
-                                        highlight(note.title, query),
+                                    children: highlight(note.title, query),
                                   ),
                                 ),
                                 const SizedBox(height: 6),
                                 RichText(
                                   text: TextSpan(
                                     style: const TextStyle(
-                                        color: CupertinoColors.systemGrey),
-                                    children:
-                                        highlight(note.content, query),
+                                      color: CupertinoColors.systemGrey,
+                                    ),
+                                    children: highlight(note.content, query),
                                   ),
                                 ),
                               ],

@@ -1,4 +1,3 @@
-
 import 'package:drift/drift.dart';
 
 class Notes extends Table {
@@ -7,5 +6,7 @@ class Notes extends Table {
   TextColumn get content => text()();
   BoolColumn get pinned => boolean().withDefault(const Constant(false))();
   BoolColumn get archived => boolean().withDefault(const Constant(false))();
-  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  TextColumn get tags => text().withDefault(const Constant(''))();
+
 }

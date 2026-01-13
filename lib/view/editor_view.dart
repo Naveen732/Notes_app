@@ -5,7 +5,7 @@ import 'package:notes/models/note_model.dart';
 import '../viewmodel/notes_viewmodel.dart';
 
 class EditorView extends ConsumerStatefulWidget {
-  final String? id; 
+  final String? id;
   final String from;
   const EditorView({super.key, this.id, this.from = 'home'});
 
@@ -16,6 +16,8 @@ class EditorView extends ConsumerStatefulWidget {
 class _EditorViewState extends ConsumerState<EditorView> {
   final title = TextEditingController();
   final content = TextEditingController();
+  final tagsCtrl = TextEditingController();
+
   bool _loaded = false;
 
   static const bg = Color(0xff202124);
@@ -29,6 +31,7 @@ class _EditorViewState extends ConsumerState<EditorView> {
         if (note != null && mounted) {
           title.text = note.title;
           content.text = note.content;
+          tagsCtrl.text = note.tags.join(', ');
           setState(() => _loaded = true);
         }
       });
@@ -41,6 +44,7 @@ class _EditorViewState extends ConsumerState<EditorView> {
   Widget build(BuildContext context) {
     if (!_loaded) {
       return const CupertinoPageScaffold(
+        backgroundColor: Color(0xff202124),
         child: Center(child: CupertinoActivityIndicator()),
       );
     }
@@ -90,6 +94,16 @@ class _EditorViewState extends ConsumerState<EditorView> {
                 decoration: const BoxDecoration(color: bg),
               ),
               const SizedBox(height: 10),
+              CupertinoTextField(
+                controller: tagsCtrl,
+                placeholder: "Tags (comma separated)",
+                style: const TextStyle(color: CupertinoColors.white),
+                placeholderStyle: const TextStyle(
+                  color: CupertinoColors.systemGrey,
+                ),
+                decoration: const BoxDecoration(color: bg),
+              ),
+              const SizedBox(height: 10),
               Expanded(
                 child: CupertinoTextField(
                   controller: content,
@@ -116,6 +130,11 @@ class _EditorViewState extends ConsumerState<EditorView> {
 
   Future<void> _save() async {
     final repo = ref.read(repoProvider);
+    final tags = tagsCtrl.text
+        .split(',')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
 
     if (widget.id == null) {
       await repo.add(
@@ -125,13 +144,14 @@ class _EditorViewState extends ConsumerState<EditorView> {
           pinned: false,
           archived: false,
           createdAt: DateTime.now(),
+          tags: tags,
         ),
       );
     } else {
       final note = await repo.getById(int.parse(widget.id!));
       if (note != null) {
         await repo.update(
-          note.copyWith(title: title.text, content: content.text),
+          note.copyWith(title: title.text, content: content.text, tags: tags),
         );
       }
     }

@@ -5,6 +5,8 @@ class NoteModel {
   final bool pinned;
   final bool archived;
   final DateTime createdAt;
+  final List<String> tags; 
+  
 
   const NoteModel({
     this.id,
@@ -13,6 +15,7 @@ class NoteModel {
     required this.pinned,
     required this.archived,
     required this.createdAt,
+    this.tags = const [],
   });
 
   factory NoteModel.empty() {
@@ -22,6 +25,7 @@ class NoteModel {
       pinned: false,
       archived: false,
       createdAt: DateTime.now(),
+      tags: [],
     );
   }
 
@@ -32,6 +36,7 @@ class NoteModel {
     bool? pinned,
     bool? archived,
     DateTime? createdAt,
+    List<String>? tags,
   }) {
     return NoteModel(
       id: id ?? this.id,
@@ -40,6 +45,7 @@ class NoteModel {
       pinned: pinned ?? this.pinned,
       archived: archived ?? this.archived,
       createdAt: createdAt ?? this.createdAt,
+       tags: tags ?? this.tags,
     );
   }
   

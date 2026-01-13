@@ -11,6 +11,7 @@ NoteModel fromDrift(Note n) {
     pinned: n.pinned,
     archived: n.archived,
     createdAt: n.createdAt,
+    tags: n.tags.isEmpty ? [] : n.tags.split(',').map((e) => e.trim()).toList(),
   );
 }
 
@@ -22,5 +23,6 @@ NotesCompanion toDrift(NoteModel n) {
     pinned: Value(n.pinned),
     archived: Value(n.archived),
     createdAt: Value(n.createdAt),
+    tags: Value(n.tags.join(',')),
   );
 }

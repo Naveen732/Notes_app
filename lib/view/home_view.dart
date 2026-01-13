@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
+import 'package:notes/models/note_model.dart';
 import '../viewmodel/notes_viewmodel.dart';
 import 'widget/sidebar.dart';
 
@@ -21,13 +22,12 @@ class _HomeViewState extends ConsumerState<HomeView> {
   Widget build(BuildContext context) {
     final pinned = ref.watch(pinnedNotesProvider);
     final others = ref.watch(otherNotesProvider);
-    final notesAsync = ref.watch(notesProvider); 
+    final notesAsync = ref.watch(notesProvider);
     return CupertinoPageScaffold(
       backgroundColor: bg,
       child: SafeArea(
         child: Stack(
           children: [
-          
             Column(
               children: [
                 _topBar(context),
@@ -154,7 +154,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
     );
   }
 
-  Widget _section(String title, List notes) {
+  Widget _section(String title, List<NoteModel> notes) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -173,7 +173,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
     );
   }
 
-  Widget _grid(List notes) {
+  Widget _grid(List<NoteModel> notes) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: MasonryGridView.count(
@@ -181,33 +181,33 @@ class _HomeViewState extends ConsumerState<HomeView> {
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
         shrinkWrap: true,
-        physics: NeverScrollableScrollPhysics(),
+        physics: const NeverScrollableScrollPhysics(),
         itemCount: notes.length,
-        itemBuilder: (context, i) => _noteTile(notes[i].id),
+        itemBuilder: (context, i) => _noteTile(notes[i].id!),
       ),
     );
   }
 
-  Widget _list(List notes) {
+  Widget _list(List<NoteModel> notes) {
     return ListView.builder(
       itemCount: notes.length,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemBuilder: (context, i) => _noteTile(notes[i].id));
+      itemBuilder: (context, i) => _noteTile(notes[i].id!),
+    );
   }
 
   Widget _noteTile(int noteId) {
-  return Consumer(
-    builder: (context, ref, _) {
-      final note = ref.watch(noteByIdProvider(noteId));
+    return Consumer(
+      builder: (context, ref, _) {
+        final note = ref.watch(noteByIdProvider(noteId));
 
-      if (note == null) return const SizedBox.shrink();
+        if (note == null) return const SizedBox.shrink();
 
-      return _noteCard(note, ref);
-    },
-  );
-}
-
+        return _noteCard(note, ref);
+      },
+    );
+  }
 
   Widget _noteCard(note, WidgetRef ref) {
     return Dismissible(
@@ -278,11 +278,37 @@ class _HomeViewState extends ConsumerState<HomeView> {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(color: CupertinoColors.systemGrey),
               ),
+              if (note.tags.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: note.tags.map<Widget>((tag) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xff303134),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: CupertinoColors.systemGrey),
+                      ),
+                      child: Text(
+                        '#$tag',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: CupertinoColors.systemGrey,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
             ],
           ),
         ),
       ),
     );
-    
   }
 }
