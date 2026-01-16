@@ -39,7 +39,7 @@ class SearchView extends ConsumerWidget {
           children: [
             _filters(ref),
 
-            // 🔥 TAG BAR
+          
             if (tags.isNotEmpty)
               SizedBox(
                 height: 40,
